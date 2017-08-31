@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-version="3.19.1"
-sha256="eea6df06a2c14d574bdff36b42111b2c23876a6f08a9f24a644672bbfb6771ef"
+version="3.20.2"
+sha256="fe605933a951304ade3a09588bddea40a3b2e19dd2358cf9bef273384ce7d3a3"
 
 # Install the Platform.sh CLI.
 if [ ! -f /usr/local/bin/platform ] || [[ ! "$(platform --version)" == *"$version" ]]; then
