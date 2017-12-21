@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-version="3.22.0"
-sha256="72c6bf0922d43ee795d20a575fa7c62e34011fbf6e525ea8d734ef60c53011e6"
+# See https://github.com/platformsh/platformsh-cli/releases for version numbers
+# and SHA-256 hashes.
+version="3.26.0"
+sha256="8343ce8235535f2c388a5ed0f0a321debc9a1838fd53c006c75445b2e099cbe9"
 
 # Install the Platform.sh CLI.
 if [ ! -f /usr/local/bin/platform ] || [[ ! "$(platform --version)" == *"$version" ]]; then
