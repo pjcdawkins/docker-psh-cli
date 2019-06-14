@@ -36,14 +36,17 @@ if ($newContents === $installScript) {
 }
 
 function update_script(string $script, string $version, string $sha256): string {
-  $script = preg_replace('/^version\=([0-9\.a-z"\']*)/m', 'version="' . ltrim($version, 'v') . '"', $script);
-  $script = preg_replace('/^sha256\=([0-9\.a-z"\']*)/m', 'sha256="' . $sha256 . '"', $script);
+  $script = preg_replace('/^version\=([0-9\.a-z\-"\']*)/m', 'version="' . ltrim($version, 'v') . '"', $script);
+  $script = preg_replace('/^sha256\=([0-9\.a-z\-"\']*)/m', 'sha256="' . $sha256 . '"', $script);
 
   return $script;
 }
 
 function get_latest_version(array $manifest): ?array {
   $sorted = $manifest;
+  $sorted = array_filter($sorted, function (array $item) {
+    return strpos($item['version'], '-') === false;
+  });
   usort($sorted, function (array $a, array $b) {
     return version_compare($b['version'], $a['version']);
   });
