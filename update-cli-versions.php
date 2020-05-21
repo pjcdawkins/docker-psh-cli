@@ -26,14 +26,25 @@ $newContents = update_script($installScript, $latest['version'], $latest['sha256
 if ($newContents === $installScript) {
   echo "Nothing to update\n";
   exit;
-} else {
-  $success = file_put_contents($installScriptFilename, $newContents) !== false;
-  if (!$success) {
-    throw new \RuntimeException("Failed to update file: $installScriptFilename");
-  }
-  echo "Updated file: $installScriptFilename\n";
-  exit;
 }
+$success = file_put_contents($installScriptFilename, $newContents) !== false;
+if (!$success) {
+  throw new \RuntimeException("Failed to update file: $installScriptFilename");
+}
+echo "Updated file: $installScriptFilename\n";
+
+echo "Committing to Git...\n";
+passthru('git add ' . escapeshellarg($installScriptFilename), $return_var);
+if ($return_var !== 0) {
+  exit($return_var);
+}
+passthru('git commit -m ' . escapeshellarg("Update CLI to " . $latest['version']), $return_var);
+if ($return_var !== 0) {
+  exit($return_var);
+}
+echo "Pushing...\n";
+passthru('git push', $return_var);
+exit($return_var);
 
 function update_script(string $script, string $version, string $sha256): string {
   $script = preg_replace('/^version\=([0-9\.a-z\-"\']*)/m', 'version="' . ltrim($version, 'v') . '"', $script);
