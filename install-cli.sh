@@ -3,8 +3,8 @@ set -e
 
 # See https://github.com/platformsh/platformsh-cli/releases for version numbers
 # and SHA-256 hashes.
-version="3.56.5"
-sha256="63de670f63500576ec9e4404392b0b325fe936416a3ad1c74f90e7b34e392bfb"
+version="3.56.6"
+sha256="62bf15c435e06f9be8637b1cd41847badca60b16467853d508fcf6c491013c05"
 
 # Install the Platform.sh CLI.
 if [ ! -f /usr/local/bin/platform ] || [[ ! "$(platform --version)" == *"$version" ]]; then
