@@ -7,15 +7,12 @@ $cliCommand = 'platform';
 
 log("Fetching the list of regions from the API...");
 
-$json = run($cliCommand . ' api:curl /regions');
+$json = run($cliCommand . ' api:curl ' . escapeshellarg('/regions?filter[private]=0'));
 $regions = $json ? \json_decode($json, true) : [];
 if (!$regions || empty($regions['regions'])) {
   log("\nUnable to read regions from the API.");
   exit(1);
 }
-
-// Remove private regions.
-$regions['regions'] = \array_filter($regions['regions'], function($data) { return empty($data['private']); });
 
 log(\count($regions['regions']) . " region(s) found\n");
 
