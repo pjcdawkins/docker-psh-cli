@@ -10,58 +10,87 @@ log("Fetching the list of regions from the API...");
 $json = run($cliCommand . ' api:curl ' . escapeshellarg('/regions?filter[private]=0'));
 $regions = $json ? \json_decode($json, true) : [];
 if (!$regions || empty($regions['regions'])) {
-  log("\nUnable to read regions from the API.");
-  exit(1);
+    log("\nUnable to read regions from the API.");
+    exit(1);
 }
 
 log(\count($regions['regions']) . " region(s) found\n");
 
-$hostnames = [];
+$domains = [];
 foreach ($regions['regions'] as $region) {
-  $hostname = \parse_url($region['endpoint'], PHP_URL_HOST);
-  if (!$hostname) {
-    log("Failed to parse hostname for region: " . $region['id']);
-    continue;
-  }
-  $hostnames[] = $hostname;
+    $domain = \parse_url($region['endpoint'], PHP_URL_HOST);
+    if (!$domain) {
+        log("Failed to parse hostname for region: " . $region['id']);
+        continue;
+    }
+    $domains[] = $domain;
 }
 
-\sort($hostnames);
+sortDomains($domains);
 
 $known_hosts = [];
 
 $prefixes = ['git.', 'ssh.'];
-$count = \count($hostnames) * \count($prefixes);
+$count = \count($domains) * \count($prefixes);
 $i = 1;
-foreach ($hostnames as $hostname) {
-  foreach ($prefixes as $prefix) {
-    log(\sprintf("%02d/%02d Scanning %s%s", $i, $count, $prefix, $hostname));
-    if ($output = run('ssh-keyscan ' . \escapeshellarg($prefix . $hostname) . ' 2>/dev/null')) {
-      $known_hosts[] = trim($output);
+foreach ($domains as $domain) {
+    foreach ($prefixes as $prefix) {
+        log(\sprintf("%02d/%02d Scanning %s%s", $i, $count, $prefix, $domain));
+        if ($output = run('ssh-keyscan ' . \escapeshellarg($prefix . $domain) . ' 2>/dev/null')) {
+            $known_hosts[] = trim($output);
+        }
+        $i++;
     }
-    $i++;
-  }
 }
 
 $filename = __DIR__ . '/known_hosts';
 
 if (!\file_put_contents($filename, \implode("\n", $known_hosts) . "\n")) {
-  log("Failed to write to file: $filename");
-  exit(1);
+    log("Failed to write to file: $filename");
+    exit(1);
 }
 
 log("\nDone. Review any change(s) carefully.");
 exit(0);
 
-function log(string $msg, $newline = true): void {
-  \fputs(STDERR, $msg . ($newline ? "\n" : ''));
+/**
+ * Logs a message to the terminal.
+ */
+function log(string $msg, $newline = true): void
+{
+    \fputs(STDERR, $msg . ($newline ? "\n" : ''));
 }
 
-function run(string $cmd): string {
-  \exec($cmd, $output, $result_code);
-  if ($result_code !== 0) {
-    log("The command returned an error code ($result_code): $cmd");
-    return '';
-  }
-  return \implode("\n", $output);
+/**
+ * Runs a command and returns its output while logging errors.
+ */
+function run(string $cmd): string
+{
+    \exec($cmd, $output, $result_code);
+    if ($result_code !== 0) {
+        log("The command returned an error code ($result_code): $cmd");
+        return '';
+    }
+    return \implode("\n", $output);
+}
+
+/**
+ * Sorts a list of region domains.
+ */
+function sortDomains(array &$regions): bool
+{
+    return \usort($regions, 'Platformsh\Scripts\compareDomains');
+}
+
+/**
+ * Compares region domains for natural sorting.
+ */
+function compareDomains(string $regionA, string $regionB): int
+{
+    if (\strpos($regionA, '.') && \strpos($regionB, '.')) {
+        $partsA = \explode('.', $regionA, 2);
+        $partsB = \explode('.', $regionB, 2);
+        return (\strnatcasecmp($partsA[1], $partsB[1]) * 10) + \strnatcasecmp($partsA[0], $partsB[0]);
+    }
+    return \strnatcasecmp($regionA, $regionB);
 }
