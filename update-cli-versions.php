@@ -2,7 +2,7 @@
 <?php
 declare(strict_types=1);
 
-$manifestUrl = 'https://raw.githubusercontent.com/platformsh/platformsh-cli/3.x/dist/manifest.json';
+$manifestUrl = 'https://raw.githubusercontent.com/platformsh/legacy-cli/main/dist/manifest.json';
 $installScriptFilename = __DIR__ . '/install-cli.sh';
 
 $manifest = json_decode(file_get_contents($manifestUrl), true);
